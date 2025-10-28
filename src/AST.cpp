@@ -39,7 +39,7 @@ int CommandNode::execute(ShellContext &context) {
     }
     auto it = context.commandRegistry.find(cmd);
 
-    if (it != context.commandRegistry.end()) return it->second(evaluatedArguments);
+    if (it != context.commandRegistry.end()) return it->second(context, evaluatedArguments);
     else return context.executeExternalCommand(cmd, evaluatedArguments);
 }
 
