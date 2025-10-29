@@ -24,3 +24,9 @@ class cdCmd: public ICommand
     int execute(ShellContext& context, std::vector<std::string>& args) override;
     std::string name() const override {return "cd";};
 };
+
+class exportCmd: public ICommand
+{
+     int execute(ShellContext& context, std::vector<std::string>& args) override;
+    std::string name() const override {return "export";};
+};

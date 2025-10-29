@@ -1,5 +1,6 @@
 #include "BuiltinCommands.hpp"
-#include<iostream>
+#include "Helpers.hpp"
+
 #include<print>
 #include<ranges>
 
@@ -61,4 +62,23 @@ int cdCmd::execute(ShellContext& context, std::vector<std::string>& args)
 
         context.current_dir =  std::filesystem::current_path();
         return 0;
+}
+
+int exportCmd::execute(ShellContext& context, std::vector<std::string>& args)
+{
+    for (auto& arg:args)
+    {
+        auto pos = arg.find("=");
+        if (pos != std::string::npos)
+        {
+                auto kv  = Helpers::split(arg.c_str(), '=');
+                if (kv.size() == 2)
+                context.env[kv[0]] = kv[1];
+        }
+        else{
+                auto it = context.env.find(arg);
+                if (it == context.env.end()) context.env[arg] = "";                
+        }
+    }
+    return 0;
 }

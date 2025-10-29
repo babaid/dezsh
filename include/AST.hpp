@@ -43,7 +43,7 @@ class LiteralNode: public ArgumentNode
   int execute(ShellContext &context) override {
     throw std::runtime_error("LiteralNode cannot be executed");
 } 
-  std::string evaluate(ShellContext& context) override {return value_;}
+  std::string evaluate(ShellContext& context) override;
   std::string toString() override { return "LiteralNode("+value_+")"; }
   TokenType getType() override { return TokenType::TOKEN_WORD; }
   private:

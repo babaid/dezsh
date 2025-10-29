@@ -27,6 +27,7 @@ struct ShellContext
         std::unordered_map<std::string, std::unique_ptr<ICommand>>
             commandRegistry;
         std::unordered_map<std::string, std::string> env;
+        std::string hostname;
 
         std::filesystem::path find_executable(const std::string &cmd);
         int executeExternalCommand(std::string &CmdName, std::vector<std::string> &args);
