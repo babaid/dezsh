@@ -1,4 +1,5 @@
 #include "AST.hpp"
+
 #include <iomanip>
 
 #include<iostream>
@@ -39,7 +40,7 @@ int CommandNode::execute(ShellContext &context) {
     }
     auto it = context.commandRegistry.find(cmd);
 
-    if (it != context.commandRegistry.end()) return it->second(context, evaluatedArguments);
+    if (it != context.commandRegistry.end()) return it->second->execute(context, evaluatedArguments);
     else return context.executeExternalCommand(cmd, evaluatedArguments);
 }
 

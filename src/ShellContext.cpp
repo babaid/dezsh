@@ -1,37 +1,65 @@
-#include "ShellContext.hpp"
-#include<iostream>
+#include "BuiltinCommands.hpp"
+#include "Helpers.hpp"
+
+#include<print>
 #include<stdexcept>
-
-int becho(ShellContext& context, const std::vector<std::string>& args)
-{
-    for (auto& arg:args) std::cout << arg << " ";
-        std::cout << std::endl;
-        return 0;
-}
-int bpwd(ShellContext& context,const std::vector<std::string>& args)
-{
-    if (!args.empty()) throw std::runtime_error("pwd does not accpet any arguments.");
-    std::cout << std::filesystem::current_path().string() << std::endl;
-    return 0;
-}
-
-int bexit(ShellContext& context,const std::vector<std::string>& args)
-{
-    if (args.size()>=1) 
-    {
-        context.running = false;
-        context.exit_code  = std::stoi(args[0]);
-    }
-    context.running = false;
-    return 0;
-}
+#include<unistd.h>
 
 ShellContext::ShellContext()
 {
     current_dir = std::filesystem::current_path();
     //register echo
-   commandRegistry["echo"]  = becho;
-   commandRegistry["pwd"] = bpwd;
-   commandRegistry["exit"] = bexit;
-
+   commandRegistry.emplace("echo", std::make_unique<echoCmd>());
+   commandRegistry.emplace("pwd", std::make_unique<pwdCmd>());
+   commandRegistry.emplace("exit", std::make_unique<exitCmd>());
+   commandRegistry.emplace("cd", std::make_unique<cdCmd>());
 }
+
+std::filesystem::path ShellContext::find_executable(const std::string& cmd) {
+                std::filesystem::path exec_file{};
+                const char* fp = getenv("PATH");
+                //different for windows
+                std::vector<std::string> PATH = Helpers::split(fp, ':');
+                for (const auto& dir : PATH) {
+                        for (const auto& entry : std::filesystem::recursive_directory_iterator(dir, std::filesystem::directory_options::skip_permission_denied)) {
+                                if (entry.path().filename() == cmd) {
+                                        if (access(entry.path().c_str(), X_OK) == 0) {
+                                                exec_file = entry.path();
+                                                return exec_file;
+                                        }
+                                }
+                        }
+                }
+                return exec_file;
+        }
+
+
+int ShellContext::executeExternalCommand(std::string& CmdName, std::vector<std::string>& args){
+    fs::path exe_path = find_executable(CmdName);
+        std::string exec_cmd = exe_path.string();
+
+        std::vector<char*> argv;
+
+        argv.push_back(CmdName.data());
+
+        for (auto& arg : args) {
+                argv.push_back(arg.data());
+        }
+        argv.push_back(nullptr);
+
+        if (!exe_path.empty()) {
+                size_t pid = fork();
+                if (pid == 0) {
+                        int err_flag = execv(exec_cmd.data(), argv.data());
+                        if (err_flag) {
+                                perror("Could not execute.");
+                                exit_code = err_flag;
+                        }
+                } else if (pid > 0) {
+                        int status;
+                        waitpid(pid, &status, 0);
+                }
+        } else
+                std::println("{}: not found", CmdName);
+          return 0;
+  };
