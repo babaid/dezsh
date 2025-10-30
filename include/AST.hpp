@@ -14,7 +14,7 @@ class ArgumentNode;
 class ASTNode {
 public:
 virtual ~ASTNode() = default;
-  virtual int execute(ShellContext &context) = 0;
+  virtual int execute(ShellContext &context, std::istream& in, std::ostream& out) = 0;
   virtual std::string toString() = 0;
   virtual TokenType getType() = 0;
 };
@@ -22,7 +22,7 @@ virtual ~ASTNode() = default;
 class AST{
 public:
 AST(const std::vector<Token>&);
-void execute(ShellContext& context){if (root_) root_->execute(context);};
+void execute(ShellContext& context, , std::istream& in, std::ostream& out){if (root_) root_->execute(context);};
 private:
 std::unique_ptr<ASTNode> parseTokens(const std::vector<Token>&);
 std::unique_ptr<ASTNode> root_;
@@ -62,5 +62,18 @@ private:
   std::string cmd;
   std::vector<std::unique_ptr<ArgumentNode>> args;
 };
+
+class PipeNode : public ASTNode {
+public:
+ 
+  int execute(ShellContext &context) override;
+  std::string toString() override { return "PipeNode"; }
+  TokenType getType() override { return TokenType::TOKEN_PIPE; }
+
+private:
+ std::unique_ptr<ASTNode> left;
+ std::unique_ptr<ASTNode> right;
+};
+
 
 #endif
