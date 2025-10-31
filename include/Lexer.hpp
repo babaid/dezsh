@@ -53,6 +53,7 @@ private:
   void skipWhiteSpace();
   Token parseWord();
   Token parseOperator();
+  Token parseQuotedString();
 };
 
 #endif

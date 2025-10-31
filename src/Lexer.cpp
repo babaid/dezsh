@@ -67,7 +67,9 @@ Token Lexer::nextToken()
 
   if (state_.curr == '\0')
     return Token{TokenType::TOKEN_EOF, "", line, col};
-  else if (std::isalnum(state_.curr) || state_.curr == '.' || state_.curr == '_' || state_.curr == '$')
+  else if (state_.curr == '"' || state_.curr == '\'') 
+    return parseQuotedString();
+  else if (std::isalnum(state_.curr) || state_.curr == '.' || state_.curr == '_' || state_.curr == '$' || state_.curr == '-')
     return parseWord();
   else
     return parseOperator();
@@ -132,4 +134,22 @@ Token Lexer::parseOperator()
   default:
     return Token{TokenType::TOKEN_WORD, std::string(1, c), line, col};
   }
+}
+
+Token Lexer::parseQuotedString() {
+    char quoteChar = state_.curr; // ' or "
+    advance(); // skip opening quote
+
+    size_t startLine = state_.line;
+    size_t startCol = state_.col;
+    std::string value;
+
+    while (state_.curr != '\0' && state_.curr != quoteChar) {
+        value += state_.curr;
+        advance();
+    }
+
+    if (state_.curr == quoteChar) advance(); // skip closing quote
+
+    return Token{TokenType::TOKEN_WORD, value, startLine, startCol};
 }

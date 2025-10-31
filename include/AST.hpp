@@ -69,8 +69,6 @@ public:
   int execute(ShellContext &context, std::istream& in, std::ostream& out) override;
   std::string toString() override { return "PipeNode"; }
   TokenType getType() override { return TokenType::TOKEN_PIPE; }
-
-private:
  std::unique_ptr<ASTNode> left;
  std::unique_ptr<ASTNode> right;
 };

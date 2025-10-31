@@ -47,42 +47,104 @@ std::filesystem::path ShellContext::find_executable(const std::string &cmd)
         return exec_file;
 }
 
-int ShellContext::executeExternalCommand(std::string &CmdName, std::vector<std::string> &args,
-                    std::istream& in,
-                    std::ostream& out)
+int ShellContext::executeExternalCommand(
+    std::string &CmdName,
+    std::vector<std::string> &args,
+    std::istream &in,
+    std::ostream &out)
 {
+
         fs::path exe_path = find_executable(CmdName);
+        if (exe_path.empty())
+        {
+                std::println("{}: not found", CmdName);
+                return -1;
+        }
+
         std::string exec_cmd = exe_path.string();
 
         std::vector<char *> argv;
-
         argv.push_back(CmdName.data());
-
         for (auto &arg : args)
-        {
                 argv.push_back(arg.data());
-        }
         argv.push_back(nullptr);
 
-        if (!exe_path.empty())
+        // Read input from upstream command
+
+        pid_t pid;
+        int status;
+        if (&in != &std::cin && in.rdbuf()->in_avail() > 0)
         {
-                size_t pid = fork();
+
+                std::string inputStr((std::istreambuf_iterator<char>(in)),
+                                     std::istreambuf_iterator<char>());
+                // --- External command receiving piped input ---
+
+                int pipefd[2];
+                if (pipe(pipefd) == -1)
+                {
+                        perror("pipe");
+                        return -1;
+                }
+
+                pid = fork();
+                if (pid < 0)
+                {
+                        perror("fork");
+                        return -1;
+                }
+
                 if (pid == 0)
                 {
-                        int err_flag = execv(exec_cmd.data(), argv.data());
-                        if (err_flag)
+                        // Child: redirect stdin
+                        close(pipefd[1]);
+                        if (dup2(pipefd[0], STDIN_FILENO) == -1)
                         {
-                                perror("Could not execute.");
-                                exit_code = err_flag;
+                                perror("dup2 stdin");
+                                exit(1);
                         }
+                        close(pipefd[0]);
+
+                        execv(exec_cmd.data(), argv.data());
+                        perror("execv failed");
+                        exit(1);
                 }
-                else if (pid > 0)
+                else
                 {
-                        int status;
+                        // Parent: write input to pipe
+                        close(pipefd[0]);
+                        if (!inputStr.empty())
+                        {
+                                ssize_t written = write(pipefd[1], inputStr.c_str(), inputStr.size());
+                                if (written == -1)
+                                        perror("write to pipe");
+                        }
+                        close(pipefd[1]); // signal EOF
                         waitpid(pid, &status, 0);
                 }
         }
         else
-                std::println("{}: not found", CmdName);
-        return 0;
-};
+        {
+                // --- Standalone external command ---
+                pid = fork();
+                if (pid < 0)
+                {
+                        perror("fork");
+                        return -1;
+                }
+
+                if (pid == 0)
+                {
+                        execv(exec_cmd.data(), argv.data());
+                        perror("execv failed");
+                        exit(1);
+                }
+                else
+                {
+                        waitpid(pid, &status, 0);
+                }
+        }
+
+        exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+        return exit_code;
+}
