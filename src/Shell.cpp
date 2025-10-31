@@ -19,21 +19,23 @@ Shell::Shell()
 }
 Shell::~Shell()
 {
-    free(instance);
+    instance = nullptr;
 }
 
 int Shell::run()
 {
     rl_attempted_completion_function = Shell::autocomplete;
     rl_variable_bind("show-all-if-ambiguous", "on");
-
     while (context.running)
     {
         std::string prompt = Shell::buildPrompt(context);
         char *line = readline(prompt.c_str());
+        if (!line) break;
+
         std::string line_str(line);
         free(line);
-        if (line_str.empty())
+
+        if (line_str.empty() || line_str.find_first_not_of(" \t") == std::string::npos)
             continue;
         try
         {
@@ -41,7 +43,7 @@ int Shell::run()
             auto tokens = lexer.tokenize();
 
             AST ast(tokens);
-            ast.execute(context);
+            context.exit_code = ast.execute(context, std::cin, std::cout);
         }
         catch (std::exception &exc)
         {

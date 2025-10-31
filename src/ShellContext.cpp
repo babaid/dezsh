@@ -12,6 +12,7 @@ ShellContext::ShellContext()
         commandRegistry.emplace("echo", std::make_unique<echoCmd>());
         commandRegistry.emplace("pwd", std::make_unique<pwdCmd>());
         commandRegistry.emplace("exit", std::make_unique<exitCmd>());
+        commandRegistry.emplace("type", std::make_unique<typeCmd>());
         commandRegistry.emplace("cd", std::make_unique<cdCmd>());
         commandRegistry.emplace("export", std::make_unique<exportCmd>());
 
@@ -46,7 +47,9 @@ std::filesystem::path ShellContext::find_executable(const std::string &cmd)
         return exec_file;
 }
 
-int ShellContext::executeExternalCommand(std::string &CmdName, std::vector<std::string> &args)
+int ShellContext::executeExternalCommand(std::string &CmdName, std::vector<std::string> &args,
+                    std::istream& in,
+                    std::ostream& out)
 {
         fs::path exe_path = find_executable(CmdName);
         std::string exec_cmd = exe_path.string();

@@ -13,7 +13,9 @@ class ICommand
 {
 public:
         virtual ~ICommand() = default;
-        virtual int execute(ShellContext &context, std::vector<std::string> &args) = 0;
+        virtual int execute(ShellContext &context, std::vector<std::string> &args,
+                    std::istream& in,
+                    std::ostream& out) = 0;
         virtual std::string name() const = 0;
         // virtual std::string help() const = 0;
 };
@@ -30,5 +32,7 @@ struct ShellContext
         std::string hostname;
 
         std::filesystem::path find_executable(const std::string &cmd);
-        int executeExternalCommand(std::string &CmdName, std::vector<std::string> &args);
+        int executeExternalCommand(std::string &CmdName, std::vector<std::string> &args,
+                    std::istream& in,
+                    std::ostream& out);
 };

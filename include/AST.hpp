@@ -22,7 +22,7 @@ virtual ~ASTNode() = default;
 class AST{
 public:
 AST(const std::vector<Token>&);
-void execute(ShellContext& context, , std::istream& in, std::ostream& out){if (root_) root_->execute(context);};
+int execute(ShellContext& context, std::istream& in, std::ostream& out){if (root_) return root_->execute(context, in, out); else return 1;};
 private:
 std::unique_ptr<ASTNode> parseTokens(const std::vector<Token>&);
 std::unique_ptr<ASTNode> root_;
@@ -40,7 +40,7 @@ class LiteralNode: public ArgumentNode
 {
   public:
   LiteralNode(std::string value): value_(std::move(value)){}
-  int execute(ShellContext &context) override {
+  int execute(ShellContext &context, std::istream& in, std::ostream& out) override {
     throw std::runtime_error("LiteralNode cannot be executed");
 } 
   std::string evaluate(ShellContext& context) override;
@@ -54,7 +54,7 @@ class CommandNode : public ASTNode {
 public:
   CommandNode(std::string CmdName): cmd(CmdName){};
   void addArgument(std::unique_ptr<ArgumentNode> arg);
-  int execute(ShellContext &context) override;
+  int execute(ShellContext &context, std::istream& in, std::ostream& out) override;
   std::string toString() override { return "CommandNode"; }
   TokenType getType() override { return TokenType::TOKEN_WORD; }
 
@@ -66,7 +66,7 @@ private:
 class PipeNode : public ASTNode {
 public:
  
-  int execute(ShellContext &context) override;
+  int execute(ShellContext &context, std::istream& in, std::ostream& out) override;
   std::string toString() override { return "PipeNode"; }
   TokenType getType() override { return TokenType::TOKEN_PIPE; }
 

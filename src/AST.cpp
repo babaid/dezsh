@@ -34,7 +34,7 @@ void CommandNode::addArgument(std::unique_ptr<ArgumentNode> arg)
     args.push_back(std::move(arg));
 }
 
-int CommandNode::execute(ShellContext &context)
+int CommandNode::execute(ShellContext &context, std::istream& in, std::ostream& out)
 {
     std::vector<std::string> evaluatedArguments;
     for (auto &argnode : args)
@@ -44,9 +44,9 @@ int CommandNode::execute(ShellContext &context)
     auto it = context.commandRegistry.find(cmd);
 
     if (it != context.commandRegistry.end())
-        return it->second->execute(context, evaluatedArguments);
+        return it->second->execute(context, evaluatedArguments, in, out);
     else
-        return context.executeExternalCommand(cmd, evaluatedArguments);
+        return context.executeExternalCommand(cmd, evaluatedArguments, in, out);
 }
 
 std::string LiteralNode::evaluate(ShellContext &context)
