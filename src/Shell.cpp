@@ -1,5 +1,6 @@
 #include "Shell.hpp"
 
+#define DEBUG
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <print>
@@ -10,6 +11,7 @@
 #include <string>
 #include <filesystem>
 #include <iostream>
+#include<print>
 
 Shell *Shell::instance = nullptr;
 
@@ -41,6 +43,12 @@ int Shell::run()
         {
             Lexer lexer(line_str);
             auto tokens = lexer.tokenize();
+            #ifdef DEBUG
+                for (auto& token:tokens)
+                {
+                    std::println("{}", token.Value);
+                }
+            #endif
 
             AST ast(tokens);
             context.exit_code = ast.execute(context, std::cin, std::cout);

@@ -73,5 +73,14 @@ public:
  std::unique_ptr<ASTNode> right;
 };
 
+class RedirectOutNode : public ASTNode {
+public:
+ 
+  int execute(ShellContext &context, std::istream& in, std::ostream& out) override;
+  std::string toString() override { return "RedirectOutNode"; }
+  TokenType getType() override { return TokenType::TOKEN_REDIRECT_OUT; }
+ std::unique_ptr<ASTNode> left;
+ std::unique_ptr<LiteralNode> right;};
+
 
 #endif

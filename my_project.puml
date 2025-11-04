@@ -1,0 +1,227 @@
+@startuml
+
+
+
+
+
+/' Objects '/
+
+class AST {
+	+AST(const std::vector<Token> &)
+	-parseTokens(const std::vector<Token> &) : std::unique_ptr<ASTNode>
+	-root_ : std::unique_ptr<ASTNode>
+	+execute(ShellContext& context) : void
+}
+
+
+abstract class ASTNode {
+	+~ASTNode()
+	+{abstract} getType() : TokenType
+	+{abstract} execute(ShellContext& context) : int
+	+{abstract} toString() : std::string
+}
+
+
+abstract class ArgumentNode {
+	+{abstract} getType() : TokenType
+	+{abstract} evaluate(ShellContext& context) : std::string
+	+{abstract} toString() : std::string
+}
+
+
+class CommandNode {
+	+CommandNode(std::string CmdName)
+	+getType() : TokenType
+	+execute(ShellContext& context) : int
+	-cmd : std::string
+	+toString() : std::string
+	-args : std::vector<std::unique_ptr<ArgumentNode>>
+	+addArgument(std::unique_ptr<ArgumentNode> arg) : void
+}
+
+
+abstract class ICommand {
+	+~ICommand()
+	+{abstract} execute(ShellContext& context, std::vector<std::string>& args) : int
+	+{abstract} name() : std::string {query}
+}
+
+
+class Lexer {
+	+Lexer(const std::string& input)
+	-state_ : LexerState
+	-nextToken() : Token
+	-parseOperator() : Token
+	-parseWord() : Token
+	-peek() : char
+	+tokenize() : std::vector<Token>
+	-advance() : void
+	-skipWhiteSpace() : void
+}
+
+
+class LiteralNode {
+	+LiteralNode(std::string value)
+	+getType() : TokenType
+	+execute(ShellContext& context) : int
+	+evaluate(ShellContext& context) : std::string
+	+toString() : std::string
+	-value_ : std::string
+}
+
+
+class Shell {
+	+Shell()
+	+~Shell()
+	-context : ShellContext
+	-{static} autocomplete(const char* input, int start, int end) : char*
+	-autocomplete_generate(const char* input, int state) : char*
+	-{static} autocomplete_generate_wrapper(const char* input, int state) : char*
+	+run() : int
+	-{static} instance : static Shell*
+	-{static} buildPrompt(const ShellContext& context) : std::string
+}
+
+
+class cdCmd {
+	-execute(ShellContext& context, std::vector<std::string>& args) : int
+	-name() : std::string {query}
+}
+
+
+class echoCmd {
+	-execute(ShellContext& context, std::vector<std::string>& args) : int
+	-name() : std::string {query}
+}
+
+
+class exitCmd {
+	-execute(ShellContext& context, std::vector<std::string>& args) : int
+	-name() : std::string {query}
+}
+
+
+class exportCmd {
+	-execute(ShellContext& context, std::vector<std::string>& args) : int
+	-name() : std::string {query}
+}
+
+
+class pwdCmd {
+	-execute(ShellContext& context, std::vector<std::string>& args) : int
+	-name() : std::string {query}
+}
+
+
+enum TokenType {
+	TOKEN_AND_IF
+	TOKEN_BACKGROUND
+	TOKEN_EOF
+	TOKEN_LPAREN
+	TOKEN_OR_IF
+	TOKEN_PIPE
+	TOKEN_REDIRECT_IN
+	TOKEN_REDIRECT_OUT
+	TOKEN_REDIRECT_OUT_APPEND
+	TOKEN_RPAREN
+	TOKEN_SEMI
+	TOKEN_WORD
+	VARIABLE
+}
+
+
+class LexerState {
+	+LexerState(const std::string& input)
+	+curr : char
+	+col : size_t
+	+line : size_t
+	+pos : size_t
+	+input : std::string
+}
+
+
+class ShellContext {
+	+ShellContext()
+	+running : bool
+	+executeExternalCommand(std::string& CmdName, std::vector<std::string>& args) : int
+	+exit_code : int
+	+current_dir : std::filesystem::path
+	+find_executable(const std::string& cmd) : std::filesystem::path
+	+hostname : std::string
+	+env : std::unordered_map<std::string, std::string>
+	+commandRegistry : std::unordered_map<std::string, std::unique_ptr<ICommand>>
+}
+
+
+class Token {
+	+Type : TokenType
+	+column : size_t
+	+line : size_t
+	+Value : std::string
+}
+
+
+
+
+
+/' Inheritance relationships '/
+
+ASTNode <|-- ArgumentNode
+
+
+ASTNode <|-- CommandNode
+
+
+ArgumentNode <|-- LiteralNode
+
+
+ICommand <|-- cdCmd
+
+
+ICommand <|-- echoCmd
+
+
+ICommand <|-- exitCmd
+
+
+ICommand <|-- exportCmd
+
+
+ICommand <|-- pwdCmd
+
+
+
+
+
+/' Aggregation relationships '/
+
+AST o-- ASTNode
+
+
+CommandNode o-- ArgumentNode
+
+
+Lexer *-- LexerState
+
+
+Shell o-- Shell
+
+
+Shell *-- ShellContext
+
+
+ShellContext o-- ICommand
+
+
+Token *-- TokenType
+
+
+
+
+
+
+/' Nested objects '/
+
+
+
+@enduml

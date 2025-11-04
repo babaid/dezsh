@@ -1,7 +1,7 @@
 #include "AST.hpp"
 
 #include <iomanip>
-
+#include<fstream>
 #include <print>
 
 AST::AST(const std::vector<Token> &tokens)
@@ -26,6 +26,10 @@ std::unique_ptr<ASTNode> AST::parseTokens(const std::vector<Token> &tokens)
             pipe->left = parseTokens(left);
             if (!right.empty()) pipe->right = parseTokens(right);
             return pipe;
+        }
+        else if (token.Type == TokenType::TOKEN_REDIRECT_OUT)
+        {
+            auto redirect_out
         }
         else if (token.Type == TokenType::TOKEN_EOF || token.Type == TokenType::TOKEN_SEMI)
             break;
@@ -130,5 +134,30 @@ int PipeNode::execute(ShellContext &context, std::istream &in, std::ostream &out
     
         RetVal = right->execute(context, temp2, out);
     
+    return RetVal;
+}
+
+int RedirectOutNode::execute(ShellContext &context, std::istream &in, std::ostream &out)
+{
+
+    std::ostringstream temp;
+    int RetVal = 0;
+    if (left)
+        left->execute(context, in, temp);
+    std::istringstream temp2(temp.str());
+    if (right)
+    {
+        std::ofstream file(right->evaluate(context));
+        if (file.is_open())
+        {
+            file << temp.str();
+            file.close();
+        }
+        else{
+            //Todo: actually handle the error
+            return RetVal;
+            //
+        }
+    }
     return RetVal;
 }

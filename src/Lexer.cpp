@@ -1,5 +1,6 @@
 #include "Lexer.hpp"
 #include <cctype>
+#include<print>
 
 Lexer::Lexer(const std::string &input) : state_(input) {}
 
@@ -67,10 +68,17 @@ Token Lexer::nextToken()
 
   if (state_.curr == '\0')
     return Token{TokenType::TOKEN_EOF, "", line, col};
-  else if (state_.curr == '"' || state_.curr == '\'') 
+  else if (state_.curr == '"' || state_.curr == '\'')
     return parseQuotedString();
-  else if (std::isalnum(state_.curr) || state_.curr == '.' || state_.curr == '_' || state_.curr == '$' || state_.curr == '-')
+  else if (std::isalnum(state_.curr) || state_.curr == '.' || state_.curr == '_' || state_.curr == '$' || state_.curr == '-' || state_.curr == '>')
+  {
+    if (state_.curr == '>')
+    {
+      advance();
+      return Token{TokenType::TOKEN_REDIRECT_OUT, ">", line, col};
+    }
     return parseWord();
+  }
   else
     return parseOperator();
 }
@@ -136,20 +144,23 @@ Token Lexer::parseOperator()
   }
 }
 
-Token Lexer::parseQuotedString() {
-    char quoteChar = state_.curr; // ' or "
-    advance(); // skip opening quote
+Token Lexer::parseQuotedString()
+{
+  char quoteChar = state_.curr; // ' or "
+  advance();                    // skip opening quote
 
-    size_t startLine = state_.line;
-    size_t startCol = state_.col;
-    std::string value;
+  size_t startLine = state_.line;
+  size_t startCol = state_.col;
+  std::string value;
 
-    while (state_.curr != '\0' && state_.curr != quoteChar) {
-        value += state_.curr;
-        advance();
-    }
+  while (state_.curr != '\0' && state_.curr != quoteChar)
+  {
+    value += state_.curr;
+    advance();
+  }
 
-    if (state_.curr == quoteChar) advance(); // skip closing quote
+  if (state_.curr == quoteChar)
+    advance(); // skip closing quote
 
-    return Token{TokenType::TOKEN_WORD, value, startLine, startCol};
+  return Token{TokenType::TOKEN_WORD, value, startLine, startCol};
 }

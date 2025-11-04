@@ -1,0 +1,44 @@
+[
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/AST.cpp.o -c /home/babaid/repos/dezsh/src/AST.cpp",
+  "file": "/home/babaid/repos/dezsh/src/AST.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/AST.cpp.o"
+},
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/BuiltinCommands.cpp.o -c /home/babaid/repos/dezsh/src/BuiltinCommands.cpp",
+  "file": "/home/babaid/repos/dezsh/src/BuiltinCommands.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/BuiltinCommands.cpp.o"
+},
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/Helpers.cpp.o -c /home/babaid/repos/dezsh/src/Helpers.cpp",
+  "file": "/home/babaid/repos/dezsh/src/Helpers.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/Helpers.cpp.o"
+},
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/Lexer.cpp.o -c /home/babaid/repos/dezsh/src/Lexer.cpp",
+  "file": "/home/babaid/repos/dezsh/src/Lexer.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/Lexer.cpp.o"
+},
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/Shell.cpp.o -c /home/babaid/repos/dezsh/src/Shell.cpp",
+  "file": "/home/babaid/repos/dezsh/src/Shell.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/Shell.cpp.o"
+},
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/ShellContext.cpp.o -c /home/babaid/repos/dezsh/src/ShellContext.cpp",
+  "file": "/home/babaid/repos/dezsh/src/ShellContext.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/ShellContext.cpp.o"
+},
+{
+  "directory": "/home/babaid/repos/dezsh/build",
+  "command": "/usr/bin/g++-14  -I/home/babaid/repos/dezsh/include -g -std=c++23 -o CMakeFiles/dezsh.dir/src/main.cpp.o -c /home/babaid/repos/dezsh/src/main.cpp",
+  "file": "/home/babaid/repos/dezsh/src/main.cpp",
+  "output": "CMakeFiles/dezsh.dir/src/main.cpp.o"
+}
+]
