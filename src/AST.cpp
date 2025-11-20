@@ -29,7 +29,11 @@ std::unique_ptr<ASTNode> AST::parseTokens(const std::vector<Token> &tokens)
         }
         else if (token.Type == TokenType::TOKEN_REDIRECT_OUT)
         {
-            auto redirect_out
+            auto redirect_out = std::make_unique<RedirectOutNode>();
+            std::vector<Token> left(tokens.begin(), tokens.begin() + i);
+            redirect_out->left = parseTokens(left);
+            auto outfilenode = std::make_unique<LiteralNode>(tokens[i+1].Value);
+            redirect_out->right  = outfilenode;
         }
         else if (token.Type == TokenType::TOKEN_EOF || token.Type == TokenType::TOKEN_SEMI)
             break;
