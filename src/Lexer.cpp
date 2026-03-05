@@ -1,6 +1,5 @@
 #include "Lexer.hpp"
 #include <cctype>
-#include<print>
 
 Lexer::Lexer(const std::string &input) : state_(input) {}
 

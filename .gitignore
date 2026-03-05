@@ -1,2 +1,5 @@
 CMakeFiles/
 build/
+.cache
+.vscode
+src/.vscode

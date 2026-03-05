@@ -33,7 +33,8 @@ std::unique_ptr<ASTNode> AST::parseTokens(const std::vector<Token> &tokens)
             std::vector<Token> left(tokens.begin(), tokens.begin() + i);
             redirect_out->left = parseTokens(left);
             auto outfilenode = std::make_unique<LiteralNode>(tokens[i+1].Value);
-            redirect_out->right  = outfilenode;
+            redirect_out->right  = std::move(outfilenode);
+            return redirect_out;
         }
         else if (token.Type == TokenType::TOKEN_EOF || token.Type == TokenType::TOKEN_SEMI)
             break;
@@ -132,11 +133,11 @@ int PipeNode::execute(ShellContext &context, std::istream &in, std::ostream &out
     std::ostringstream temp;
     int RetVal = 0;
     if (left)
-        left->execute(context, in, temp);
+        RetVal = left->execute(context, in, temp);
     std::istringstream temp2(temp.str());
     if (right)
     
-        RetVal = right->execute(context, temp2, out);
+        RetVal = RetVal && right->execute(context, temp2, out);
     
     return RetVal;
 }
@@ -147,7 +148,7 @@ int RedirectOutNode::execute(ShellContext &context, std::istream &in, std::ostre
     std::ostringstream temp;
     int RetVal = 0;
     if (left)
-        left->execute(context, in, temp);
+        RetVal = left->execute(context, in, temp);
     std::istringstream temp2(temp.str());
     if (right)
     {
@@ -158,9 +159,8 @@ int RedirectOutNode::execute(ShellContext &context, std::istream &in, std::ostre
             file.close();
         }
         else{
-            //Todo: actually handle the error
-            return RetVal;
-            //
+            std::println("Failed to open file: {}", right->evaluate(context));
+            return 1;
         }
     }
     return RetVal;

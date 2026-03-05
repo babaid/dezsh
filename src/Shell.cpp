@@ -1,6 +1,6 @@
 #include "Shell.hpp"
 
-#define DEBUG
+//#define DEBUG
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <print>

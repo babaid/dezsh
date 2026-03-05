@@ -86,6 +86,12 @@ int ShellContext::executeExternalCommand(
                         perror("pipe");
                         return -1;
                 }
+                int pipe_out[2];
+                if (pipe(pipe_out) == -1)
+                {
+                        perror("pipe out");
+                        return -1;
+                }
 
                 pid = fork();
                 if (pid < 0)
@@ -96,7 +102,7 @@ int ShellContext::executeExternalCommand(
 
                 if (pid == 0)
                 {
-                        // Child: redirect stdin
+                        // Child: redirect stdin and stdout
                         close(pipefd[1]);
                         if (dup2(pipefd[0], STDIN_FILENO) == -1)
                         {
@@ -105,13 +111,21 @@ int ShellContext::executeExternalCommand(
                         }
                         close(pipefd[0]);
 
+                        close(pipe_out[0]);
+                        if (dup2(pipe_out[1], STDOUT_FILENO) == -1)
+                        {
+                                perror("dup2 stdout");
+                                exit(1);
+                        }
+                        close(pipe_out[1]);
+
                         execv(exec_cmd.data(), argv.data());
                         perror("execv failed");
                         exit(1);
                 }
                 else
                 {
-                        // Parent: write input to pipe
+                        // Parent: write input to pipe, read output from pipe
                         close(pipefd[0]);
                         if (!inputStr.empty())
                         {
@@ -120,12 +134,28 @@ int ShellContext::executeExternalCommand(
                                         perror("write to pipe");
                         }
                         close(pipefd[1]); // signal EOF
+
+                        close(pipe_out[1]);
+                        char buffer[4096];
+                        ssize_t bytes_read;
+                        while ((bytes_read = read(pipe_out[0], buffer, sizeof(buffer))) > 0)
+                        {
+                                out.write(buffer, bytes_read);
+                        }
+                        close(pipe_out[0]);
+
                         waitpid(pid, &status, 0);
                 }
         }
         else
         {
                 // --- Standalone external command ---
+                int pipe_out[2];
+                if (pipe(pipe_out) == -1)
+                {
+                        perror("pipe out");
+                        return -1;
+                }
                 pid = fork();
                 if (pid < 0)
                 {
@@ -135,12 +165,28 @@ int ShellContext::executeExternalCommand(
 
                 if (pid == 0)
                 {
+                        close(pipe_out[0]);
+                        if (dup2(pipe_out[1], STDOUT_FILENO) == -1)
+                        {
+                                perror("dup2 stdout");
+                                exit(1);
+                        }
+                        close(pipe_out[1]);
+
                         execv(exec_cmd.data(), argv.data());
                         perror("execv failed");
                         exit(1);
                 }
                 else
                 {
+                        close(pipe_out[1]);
+                        char buffer[4096];
+                        ssize_t bytes_read;
+                        while ((bytes_read = read(pipe_out[0], buffer, sizeof(buffer))) > 0)
+                        {
+                                out.write(buffer, bytes_read);
+                        }
+                        close(pipe_out[0]);
                         waitpid(pid, &status, 0);
                 }
         }
