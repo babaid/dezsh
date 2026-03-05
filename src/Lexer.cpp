@@ -69,13 +69,8 @@ Token Lexer::nextToken()
     return Token{TokenType::TOKEN_EOF, "", line, col};
   else if (state_.curr == '"' || state_.curr == '\'')
     return parseQuotedString();
-  else if (std::isalnum(state_.curr) || state_.curr == '.' || state_.curr == '_' || state_.curr == '$' || state_.curr == '-' || state_.curr == '>')
+  else if (std::isalnum(state_.curr) || state_.curr == '.' || state_.curr == '_' || state_.curr == '$' || state_.curr == '-')
   {
-    if (state_.curr == '>')
-    {
-      advance();
-      return Token{TokenType::TOKEN_REDIRECT_OUT, ">", line, col};
-    }
     return parseWord();
   }
   else
