@@ -47,6 +47,13 @@ std::filesystem::path ShellContext::find_executable(const std::string &cmd)
         return exec_file;
 }
 
+bool is_terminal_stream(std::istream& in, std::ostream & out)
+{
+	if (&in != &std::cin || &out != &std::cout) return false;
+	return isatty(STDIN_FILENO) && isatty(STDOUT_FILENO);
+
+}
+
 int ShellContext::executeExternalCommand(
     std::string &CmdName,
     std::vector<std::string> &args,
@@ -73,7 +80,26 @@ int ShellContext::executeExternalCommand(
 
         pid_t pid;
         int status;
-        if (&in != &std::cin && in.rdbuf()->in_avail() > 0)
+	if (is_terminal_stream(in, out))
+	{
+		pid_t pid = fork();
+		if (pid == -1)
+		{
+			perror("fork");
+			return -1;
+		}
+		if (pid == 0)
+		{
+			execv(exe_path.string().c_str(), argv.data());
+			perror("execv");
+			_exit(127);
+		}
+		int status;
+		waitpid(pid, &status, 0);
+		return WIFEXITED(status) ? WEXITSTATUS(status) : -1;
+
+	}
+	else if (&in != &std::cin && in.rdbuf()->in_avail() > 0)
         {
 
                 std::string inputStr((std::istreambuf_iterator<char>(in)),
